@@ -1,0 +1,285 @@
+machines:
+  '1':
+    constraints: arch=amd64 spaces=compute-external,^storage-cluster
+    series: xenial
+  '2':
+    constraints: arch=amd64 spaces=storage-cluster,^compute-external
+    series: xenial
+  '3':
+    constraints: arch=amd64 spaces=storage-cluster,^compute-external
+    series: xenial
+  '4':
+    constraints: arch=amd64 spaces=storage-cluster,^compute-external
+    series: xenial
+relations:
+- - nova-compute:amqp
+  - rabbitmq-server:amqp
+- - neutron-gateway:amqp
+  - rabbitmq-server:amqp
+- - keystone:shared-db
+  - mysql:shared-db
+- - nova-cloud-controller:identity-service
+  - keystone:identity-service
+- - glance:identity-service
+  - keystone:identity-service
+- - neutron-api:identity-service
+  - keystone:identity-service
+- - neutron-openvswitch:neutron-plugin-api
+  - neutron-api:neutron-plugin-api
+- - neutron-api:shared-db
+  - mysql:shared-db
+- - neutron-api:amqp
+  - rabbitmq-server:amqp
+- - neutron-gateway:neutron-plugin-api
+  - neutron-api:neutron-plugin-api
+- - glance:shared-db
+  - mysql:shared-db
+- - glance:amqp
+  - rabbitmq-server:amqp
+- - nova-cloud-controller:image-service
+  - glance:image-service
+- - nova-compute:image-service
+  - glance:image-service
+- - nova-cloud-controller:cloud-compute
+  - nova-compute:cloud-compute
+- - nova-cloud-controller:amqp
+  - rabbitmq-server:amqp
+- - nova-cloud-controller:quantum-network-service
+  - neutron-gateway:quantum-network-service
+- - nova-compute:neutron-plugin
+  - neutron-openvswitch:neutron-plugin
+- - neutron-openvswitch:amqp
+  - rabbitmq-server:amqp
+- - openstack-dashboard:identity-service
+  - keystone:identity-service
+- - nova-cloud-controller:shared-db
+  - mysql:shared-db
+- - nova-cloud-controller:neutron-api
+  - neutron-api:neutron-api
+- - cinder:image-service
+  - glance:image-service
+- - cinder:amqp
+  - rabbitmq-server:amqp
+- - cinder:identity-service
+  - keystone:identity-service
+- - cinder:cinder-volume-service
+  - nova-cloud-controller:cinder-volume-service
+- - cinder-ceph:storage-backend
+  - cinder:storage-backend
+- - ceph-mon:client
+  - nova-compute:ceph
+- - cinder:shared-db
+  - mysql:shared-db
+- - ceph-mon:client
+  - cinder-ceph:ceph
+- - ceph-mon:client
+  - glance:ceph
+- - ceph-osd:mon
+  - ceph-mon:osd
+- - ntp:juju-info
+  - nova-compute:juju-info
+- - ntp:juju-info
+  - neutron-gateway:juju-info
+- - ceph-radosgw:mon
+  - ceph-mon:radosgw
+- - ceph-radosgw:identity-service
+  - keystone:identity-service
+series: xenial
+services:
+  ceph-mon:
+    bindings:
+      public: storage-data
+      cluster: storage-cluster
+    annotations:
+      gui-x: '750'
+      gui-y: '500'
+    charm: cs:xenial/ceph-mon
+    num_units: 3
+    to:
+    - lxd:2
+    - lxd:3
+    - lxd:4
+  ceph-osd:
+    bindings:
+      public: storage-data
+      cluster: storage-cluster
+    annotations:
+      gui-x: '1000'
+      gui-y: '500'
+    charm: cs:xenial/ceph-osd
+    num_units: 3
+    options:
+      osd-format: ext4
+      osd-devices: /srv/ceph-osd
+    to:
+    - '2'
+    - '3'
+    - '4'
+  ceph-radosgw:
+    bindings:
+      public: public-api
+      internal: internal-api
+      admin: admin-api
+    annotations:
+      gui-x: '1000'
+      gui-y: '250'
+    charm: cs:xenial/ceph-radosgw
+    num_units: 1
+    #    options:
+    #  use-embedded-webserver: true
+    to:
+    - lxd:1
+  cinder:
+    bindings:
+      public: public-api
+      internal: internal-api
+      admin: admin-api
+      shared-db: internal-api
+    annotations:
+      gui-x: '750'
+      gui-y: '0'
+    charm: cs:xenial/cinder
+    num_units: 1
+    options:
+      block-device: None
+      glance-api-version: 2
+    to:
+    - lxd:2
+  cinder-ceph:
+    annotations:
+      gui-x: '750'
+      gui-y: '250'
+    charm: cs:xenial/cinder-ceph
+    num_units: 0
+  glance:
+    bindings:
+      public: public-api
+      internal: internal-api
+      admin: admin-api
+      shared-db: internal-api
+    annotations:
+      gui-x: '250'
+      gui-y: '0'
+    charm: cs:xenial/glance
+    num_units: 1
+    to:
+    - lxd:3
+  keystone:
+    bindings:
+      public: public-api
+      internal: internal-api
+      admin: admin-api
+      shared-db: internal-api
+    annotations:
+      gui-x: '500'
+      gui-y: '0'
+    charm: cs:xenial/keystone
+    num_units: 1
+    options:
+      admin-password: openstack
+    to:
+    - lxd:3
+  mysql:
+    bindings:
+      shared-db: internal-api
+    annotations:
+      gui-x: '0'
+      gui-y: '250'
+    charm: cs:xenial/percona-cluster
+    num_units: 1
+    options:
+      max-connections: 1000
+      innodb-buffer-pool-size: '25%'
+    to:
+    - lxd:1
+  neutron-api:
+    bindings:
+      public: public-api
+      internal: internal-api
+      admin: admin-api
+      shared-db: internal-api
+    annotations:
+      gui-x: '500'
+      gui-y: '500'
+    charm: cs:xenial/neutron-api
+    num_units: 1
+    options:
+      neutron-security-groups: true
+    to:
+    - lxd:2
+  neutron-gateway:
+    bindings:
+      data: compute-data
+    annotations:
+      gui-x: '0'
+      gui-y: '0'
+    charm: cs:xenial/neutron-gateway
+    num_units: 1
+    options:
+      ext-port: ens4.99
+      instance-mtu: 1456
+    to:
+    - '1'
+  neutron-openvswitch:
+    bindings:
+      data: compute-data
+    annotations:
+      gui-x: '250'
+      gui-y: '500'
+    charm: cs:xenial/neutron-openvswitch
+    num_units: 0
+  nova-cloud-controller:
+    bindings:
+      public: public-api
+      internal: internal-api
+      admin: admin-api
+      shared-db: internal-api
+    annotations:
+      gui-x: '0'
+      gui-y: '500'
+    charm: cs:xenial/nova-cloud-controller
+    num_units: 1
+    options:
+      network-manager: Neutron
+    to:
+    - lxd:2
+  nova-compute:
+    annotations:
+      gui-x: '250'
+      gui-y: '250'
+    charm: cs:xenial/nova-compute
+    num_units: 3
+    options:
+      enable-live-migration: true
+      enable-resize: true
+      migration-auth-type: ssh
+    to:
+    - '2'
+    - '3'
+    - '4'
+  ntp:
+    annotations:
+      gui-x: '1000'
+      gui-y: '0'
+    charm: cs:xenial/ntp
+    num_units: 0
+  openstack-dashboard:
+    bindings:
+      website: public-api
+    annotations:
+      gui-x: '500'
+      gui-y: '-250'
+    charm: cs:xenial/openstack-dashboard
+    num_units: 1
+    to:
+    - lxd:4
+  rabbitmq-server:
+    bindings:
+      amqp: internal-api
+    annotations:
+      gui-x: '500'
+      gui-y: '250'
+    charm: cs:xenial/rabbitmq-server
+    num_units: 1
+    to:
+    - lxd:1

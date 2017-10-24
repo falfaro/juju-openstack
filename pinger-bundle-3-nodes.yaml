@@ -1,0 +1,48 @@
+machines:
+  '1':
+    constraints: arch=amd64 spaces=compute-external
+    series: xenial
+  '2':
+    constraints: arch=amd64 spaces=storage-cluster
+    series: xenial
+  '3':
+    constraints: arch=amd64 spaces=storage-cluster
+    series: xenial
+  '4':
+    constraints: arch=amd64 spaces=storage-cluster
+    series: xenial
+series: xenial
+services:
+  pinger-compute-storage-node:
+    bindings:
+      ep0: admin-api
+      ep1: internal-api
+      ep2: public-api
+      ep3: storage-data
+      ep4: storage-cluster
+      ep5: compute-data
+    charm: cs:~dimitern/pinger
+    num_units: 6
+    options:
+      extra-targets: "10.14.0.1 google.com 10.50.0.1 10.100.0.1 10.150.0.1 10.200.0.1 10.250.0.1 10.30.0.1"
+    to:
+    - '2'
+    - '3'
+    - '4'
+    - lxd:2
+    - lxd:3
+    - lxd:4
+  pinger-network-node:
+    bindings:
+      ep0: admin-api
+      ep1: internal-api
+      ep2: public-api
+      ep3: storage-data
+      ep4: compute-data
+    charm: cs:~dimitern/pinger
+    num_units: 2
+    options:
+      extra-targets: "10.14.0.1 google.com 10.50.0.1 10.100.0.1 10.150.0.1 10.200.0.1 10.250.0.1"
+    to:
+    - '1'
+    - lxd:1

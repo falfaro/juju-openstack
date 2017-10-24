@@ -1,0 +1,4 @@
+default-series: xenial
+logging-config: <root>=TRACE
+enable-os-refresh-update: true
+enable-os-upgrade: false
