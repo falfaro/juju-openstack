@@ -144,7 +144,7 @@ services:
       block-device: None
       glance-api-version: 2
     to:
-    - lxd:2
+    - '2'
   cinder-ceph:
     annotations:
       gui-x: '750'
