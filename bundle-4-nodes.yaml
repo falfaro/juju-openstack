@@ -229,6 +229,7 @@ services:
     options:
       bridge-mappings: physnet1:br-ex
       data-port: br-ex:ens4.99
+      dns-servers: '8.8.8.8,8.8.4.4'
       ext-port: ens4.99
       instance-mtu: 1456
       openstack-origin: cloud:xenial-newton
