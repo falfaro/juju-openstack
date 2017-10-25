@@ -268,7 +268,8 @@ services:
     num_units: 0
   openstack-dashboard:
     bindings:
-      website: public-api
+      website: admin-api
+      "": public-api
     annotations:
       gui-x: '500'
       gui-y: '-250'
