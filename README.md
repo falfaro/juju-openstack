@@ -41,6 +41,38 @@ Of these 5 servers:
 
 ## Initial
 
+### Juju
+
+The recommended approach is installing Juju using snap:
+
+    $ sudo snap install --classic conjure-up
+
+Then, prepare the configuration files required to grant Juju access to the MAAS cluster:
+
+    $ maas list
+    20-admin http://10.1.0.10:5240/MAAS/api/2.0/ wfLvEXAUYjj8dHjqGJ:Pqc4AZPffCre7tP795:eZabd2A5vs6k2DbzHPnFwKtpnhZEgv62
+
+And:
+
+    $ cat > maas-hw-cloud.yaml
+    clouds:
+      maas-hw:
+        type: maas
+        auth-types: [oauth1]
+        endpoint: http://10.1.0.10:5240/MAAS
+    $ cat > maas-hw-creds.yaml
+    credentials:
+      maas-hw:
+        default-credential: 20-admin
+        hw-juju:
+          auth-type: oauth1
+          maas-oauth: wfLvEXAUYjj8dHjqGJ:Pqc4AZPffCre7tP795:eZabd2A5vs6k2DbzHPnFwKtpnhZEgv62
+
+And finally:
+
+    $ juju add-cloud maas-hw ~/maas-hw-clouds.yaml
+    $ juju add-credential maas-hw -f ~/maas-hw-creds.yaml
+
 Getting network connectivity right is extremely important and can also be tricky. A wrong network configuration will likely yield a broken OpenStack cluster. To save some time, there is the "deploy-4-nodes-pinger.sh" script that deploys a custom Juju bundle with the "pinger" charm to check connectivity between all components. The script launches the bundle and watches for Juju to finish deployment. If everything is properly configured, all units from the bundle will be shown and green. Exiting the script (with Ctrl-C) will destroy the deployment and then one can proceed onto deploying OpenStack.
 
 ## Components
