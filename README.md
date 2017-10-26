@@ -1,6 +1,6 @@
 # Basic OpenStack Cloud
 
-This example bundle deploys a basic OpenStack Cloud (Pike with Ceph Luminous) on Ubuntu 16.04 LTS, providing Dashboard, Compute, Network, Block Storage, Object Storage, Identity and Image services.
+This example bundle deploys a basic OpenStack Cloud on Ubuntu 16.04 LTS, providing Dashboard, Compute, Network, Block Storage, Object Storage, Identity and Image services.
 
 ## Requirements
 
