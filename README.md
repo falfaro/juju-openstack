@@ -4,25 +4,48 @@ This example bundle deploys a basic OpenStack Cloud (Pike with Ceph Luminous) on
 
 ## Requirements
 
-This example bundle is designed to run on bare metal using Juju 2.x with [MAAS][] (Metal-as-a-Service); you will need to have setup a [MAAS][] deployment with a minimum of 4 physical servers prior to using this bundle.
+This example bundle is designed to run on KVM using Juju 2.x with [MAAS][] (Metal-as-a-Service); you will need to have setup a [MAAS][] deployment with 5 virtual (KVM) servers prior to using this bundle. All servers will be connected to an isolated "virsh" network named "maas", to which the MAAS controller is also attached:
 
-Certain configuration options within the bundle may need to be adjusted prior to deployment to fit your particular set of hardware. For example, network device names and block device names can vary, and passwords should be yours.
+    <network connections='10'>
+      <name>maas</name>
+      <bridge name='virbr2' stp='on' delay='0'/>
+      <mac address='52:54:00:34:73:57'/>
+      <domain name='maas'/>
+    </network>
 
-Servers should have:
+Of these 5 servers:
 
- - A minimum of 8GB of physical RAM.
- - Enough CPU cores to support your capacity requirements.
- - Two disks (identified by /dev/sda and /dev/sdb); the first is used by MAAS for the OS install, the second for Ceph storage.
- - Two cabled network ports on eno1 and eno2 (see below).
+1 server, named "node-11", for Neutron Gateway and Ceph with RabbitMQ and MySQL under LXC containers, and using the following configuration:
 
-Servers should have two physical network ports cabled; the first is used for general communication between services in the Cloud, the second is used for 'public' network traffic to and from instances (North/South traffic) running within the Cloud.
+ - ens3 and ens4 physical network interfaces attached to the shared L2 network with Internet access
+ - ens3.50, ens3.100, ens3.150 VLAN subinterfaces
+ - ens4.99, ens4.200, ens4.250 VLAN subinterfaces
+ - 8GB of RAM
+ - 2 CPU cores
+ - /dev/vda, 20GB VirtIO drive, used by MAAS for the OS install
+ - /dev/vdb, 80GB VirtIO drive, used for Ceph storage
+
+3 servers, named "node-12", "node-21" and "node-22", for Nova Compute and Ceph, with Keystone, Glance, Neutron, Nova Cloud Controller, Ceph RADOS Gateway, Cinder and Horizon under LXC containers, and using the following configuration:
+
+ - ens3 and ens4 physical network interfaces attached to the shared L2 network with Internet access
+ - ens3.50, ens3.100, ens3.150 VLAN subinterfaces
+ - ens4.30, ens4.200, ens4.250 VLAN subinterfaces
+ - 8GB of RAM
+ - 2 CPU cores
+ - /dev/vda, 20GB VirtIO drive, used by MAAS for the OS install
+ - /dev/vdb, 80GB VirtIO drive, used for Ceph storage
+
+1 server, named "node-31", for the Juju controller, and using the following configuration:
+
+ - ens3 physical network interface attached to the shared L2 network with Internet access
+
+## Initial
+
+Getting network connectivity right is extremely important and can also be tricky. A wrong network configuration will likely yield a broken OpenStack cluster. To save some time, there is the "deploy-4-nodes-pinger.sh" script that deploys a custom Juju bundle with the "pinger" charm to check connectivity between all components. The script launches the bundle and watches for Juju to finish deployment. If everything is properly configured, all units from the bundle will be shown and green. Exiting the script (with Ctrl-C) will destroy the deployment and then one can proceed onto deploying OpenStack.
 
 ## Components
 
- - 1 Node for Neutron Gateway and Ceph with RabbitMQ and MySQL under LXC containers.
- - 3 Nodes for Nova Compute and Ceph, with Keystone, Glance, Neutron, Nova Cloud Controller, Ceph RADOS Gateway, Cinder and Horizon under LXC containers.
-
-All physical servers (not LXC containers) will also have NTP installed and configured to keep time in sync.
+All virtual servers (not LXC containers) will also have NTP installed and configured to keep time in sync.
 
 Neutron Gateway, Nova Compute and Ceph services are designed to be horizontally scalable.
 
