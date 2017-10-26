@@ -80,7 +80,7 @@ All commands are executed from within the expanded bundle.
 
 In order to configure and use your cloud, you'll need to install the appropriate client tools:
 
-    sudo add-apt-repository cloud-archive:pike -y
+    sudo add-apt-repository cloud-archive:newton -y
     sudo apt update
     sudo apt install python-novaclient python-keystoneclient python-glanceclient \
         python-neutronclient python-openstackclient -y
