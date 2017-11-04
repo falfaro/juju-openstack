@@ -111,6 +111,7 @@ services:
     charm: cs:xenial/ceph-osd
     num_units: 3
     options:
+      bluestore: false
       osd-devices: /dev/vdb
       osd-reformat: 'yes'
       source: cloud:xenial-newton
