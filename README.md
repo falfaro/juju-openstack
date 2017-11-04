@@ -178,7 +178,7 @@ First generate a SSH keypair so that you can access your instances once you've b
 You can now boot an instance on your cloud:
 
     nova boot --image xenial --flavor m1.small --key-name mykey \
-        --nic net-id=$(neutron net-list | grep internal | awk '{ print $2 }') \
+        --nic net-name=internal --user-data=xenial-cloud-init.cfg \
         xenial-test
 
 ### Attaching a volume
