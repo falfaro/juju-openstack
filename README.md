@@ -143,16 +143,19 @@ For the purposes of a quick test, we'll setup an 'external' network and shared r
 
 for example (for a private cloud):
 
-    ./neutron-ext-net --network-type flat
-        -g 10.230.168.1 -c 10.230.168.0/21 \
-        -f 10.230.168.10:10.230.175.254 ext_net
+    ./neutron-ext-net --network-type flat \
+        -g 10.99.0.1 -c 10.99.0.0/20 \
+        -f 10.99.0.10:10.99.0.254 ext_net
+    neutron subnet-update \
+        --dns-nameserver 8.8.8.8 \
+        --dns-nameserver 8.8.4.4 ext_net_subnet
 
 You'll need to adapt the parameters for the network configuration that eno2 on all the servers is connected to; in a public cloud deployment these ports would be connected to a publicly addressable part of the Internet.
 
 We'll also need an 'internal' network for the admin user which instances are actually connected to:
 
-    ./neutron-tenant-net -t admin -r provider-router \
-        [-N <dns-server>] internal 10.5.5.0/24
+    ./neutron-tenant-net -t admin \
+        -r provider-router internal 10.5.5.0/24
 
 Neutron provides a wide range of configuration options; see the [OpenStack Neutron][] documentation for more details.
 
@@ -208,6 +211,20 @@ and then allow access via SSH (and ping) - you only need todo this once:
 After running these commands you should be able to access the instance:
 
     ssh ubuntu@<new-floating-ip>
+
+## Remote access
+
+One can use `sshuttle` to tunnel traffic to this environment (MAAS and OpenStack):
+
+     sshuttle -r hostname 10.1.0.0/20 10.50.0.0/20
+
+To retrieve the URL where OpenStack Horizon is rechable:
+
+    ./get-horizon-url.sh
+
+The URL for accessing MAAS:
+
+    MAAS: http://10.1.0.10:5240/MAAS/
 
 ## What next?
 
