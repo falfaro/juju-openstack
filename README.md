@@ -163,7 +163,7 @@ Neutron provides a wide range of configuration options; see the [OpenStack Neutr
 
 Starting with the OpenStack Newton release, default flavors are no longer created at install time. You therefore need to create at least one machine type before you can boot an instance:
 
-    nova flavor-create m1.small auto 2048 20 1 --ephemeral 20
+    nova flavor-create m1.small auto 1024 4 1
 
 ### Booting an instance
 
