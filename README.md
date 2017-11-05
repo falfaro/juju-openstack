@@ -216,7 +216,7 @@ After running these commands you should be able to access the instance:
 
 One can use `sshuttle` to tunnel traffic to this environment (MAAS and OpenStack):
 
-     sshuttle -r hostname 10.1.0.0/20 10.50.0.0/20
+     sshuttle -r hostname 10.1.0.0/20 10.14.0.0/20 10.50.0.0/20
 
 To retrieve the URL where OpenStack Horizon is rechable:
 
