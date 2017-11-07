@@ -12,6 +12,12 @@ machines:
     constraints: arch=amd64 spaces=storage-cluster,^compute-external
     series: xenial
 relations:
+    # Relations for setting up HA
+- - mysql:ha
+  - mysql-hacluster:ha
+- - keystone:ha
+  - keystone-hacluster:ha
+    # OpenStack relations
 - - nova-compute:amqp
   - rabbitmq-server:amqp
 - - neutron-gateway:amqp
@@ -111,7 +117,8 @@ services:
     charm: cs:xenial/ceph-osd
     num_units: 3
     options:
-      bluestore: false
+      bluestore: true
+      harden: ''
       osd-devices: /dev/vdb
       osd-reformat: 'yes'
       source: cloud:xenial-newton
@@ -181,25 +188,41 @@ services:
       gui-x: '500'
       gui-y: '0'
     charm: cs:xenial/keystone
-    num_units: 1
+    num_units: 3
     options:
       admin-password: openstack
       openstack-origin: cloud:xenial-newton
+      vip: '10.50.0.201 10.100.0.201 10.150.0.201'
     to:
+    - lxd:1
+    - lxd:2
     - lxd:3
+  keystone-hacluster:
+    charm: cs:xenial/hacluster
+    options:
+      cluster_count: 3
   mysql:
     bindings:
       shared-db: internal-api
+      cluster: internal-api
     annotations:
       gui-x: '0'
       gui-y: '250'
     charm: cs:xenial/percona-cluster
-    num_units: 1
+    num_units: 3
     options:
-      max-connections: 1000
+      vip: '10.100.0.200'
       innodb-buffer-pool-size: '25%'
+      max-connections: 1000
+      min-cluster-size: 3
     to:
     - lxd:1
+    - lxd:2
+    - lxd:3
+  mysql-hacluster:
+    charm: cs:xenial/hacluster
+    options:
+      cluster_count: 3
   neutron-api:
     bindings:
       public: public-api
@@ -218,7 +241,7 @@ services:
       neutron-security-groups: true
       openstack-origin: cloud:xenial-newton
     to:
-    - lxd:2
+    - lxd:4
   neutron-gateway:
     bindings:
       data: compute-data
@@ -261,7 +284,7 @@ services:
       network-manager: Neutron
       openstack-origin: cloud:xenial-newton
     to:
-    - lxd:2
+    - lxd:3
   nova-compute:
     annotations:
       gui-x: '250'
