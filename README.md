@@ -19,7 +19,7 @@ Of these 5 servers:
 
  - ens3 and ens4 physical network interfaces attached to the shared L2 network with Internet access
  - ens3.50, ens3.100, ens3.150 VLAN subinterfaces
- - ens4.99, ens4.200, ens4.250 VLAN subinterfaces
+ - ens4.30, ens4.99, ens4.200, ens4.250 VLAN subinterfaces
  - 8GB of RAM
  - 2 CPU cores
  - /dev/vda, 20GB VirtIO drive, used by MAAS for the OS install
@@ -225,6 +225,22 @@ To retrieve the URL where OpenStack Horizon is rechable:
 The URL for accessing MAAS:
 
     MAAS: http://10.1.0.10:5240/MAAS/
+
+## Troubleshooting
+
+### Juju retry-provisioning
+
+You can use the `retry-provisioning` command in cases where deploying applications, adding units, or adding machines fails. It allows you to specify machines which should be retried to resolve errors reported with `juju status`.
+
+For example, after having deployed 100 units and machines, status reports that machines '3', '27' and '57' could not be provisioned because of a 'rate limit exceeded' error. You can ask Juju to retry:
+
+    juju retry-provisioning 3 27 57
+
+### Juju resolved
+
+To force a unit in error state to be retried one can use `juju resolved`:
+
+    juju resolved keystone/1
 
 ## What next?
 
