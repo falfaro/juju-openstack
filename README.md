@@ -228,6 +228,12 @@ The URL for accessing MAAS:
 
 ## Troubleshooting
 
+### Dry run
+
+To get a summary of the deployment steps (without actually deploying) a dry run can be performed:
+
+    juju deploy --dry-run bundle-4-nodes.newton.yaml
+
 ### Juju retry-provisioning
 
 You can use the `retry-provisioning` command in cases where deploying applications, adding units, or adding machines fails. It allows you to specify machines which should be retried to resolve errors reported with `juju status`.
