@@ -1,6 +1,6 @@
 # Basic OpenStack Cloud
 
-This example bundle deploys a basic OpenStack Cloud on Ubuntu 16.04 LTS, providing Dashboard, Compute, Network, Block Storage, Object Storage, Identity and Image services.
+This example bundle deploys a basic OpenStack Cloud on Ubuntu 16.04 LTS, providing Dashboard, Compute, Network, Block Storage, Object Storage, Identity and Image services. It is based on the work of many others, including https://insights.ubuntu.com/2016/01/31/nodes-networking-deploying-openstack-on-maas-1-9-with-juju/.
 
 ## Requirements
 
