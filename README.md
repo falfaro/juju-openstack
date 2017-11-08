@@ -19,7 +19,7 @@ Of these 5 servers:
 
  - ens3 and ens4 physical network interfaces attached to the shared L2 network with Internet access
  - ens3.50, ens3.100, ens3.150 VLAN subinterfaces
- - ens4.30, ens4.99, ens4.200, ens4.250 VLAN subinterfaces
+ - ens4.99, ens4.200, ens4.250 VLAN subinterfaces
  - 8GB of RAM
  - 2 CPU cores
  - /dev/vda, 20GB VirtIO drive, used by MAAS for the OS install
