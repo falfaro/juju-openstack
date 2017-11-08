@@ -23,7 +23,6 @@ Of these 5 servers:
  - 8GB of RAM
  - 2 CPU cores
  - /dev/vda, 20GB VirtIO drive, used by MAAS for the OS install
- - /dev/vdb, 80GB VirtIO drive, used for Ceph storage
 
 3 servers, named "node-12", "node-21" and "node-22", for Nova Compute and Ceph, with Keystone, Glance, Neutron, Nova Cloud Controller, Ceph RADOS Gateway, Cinder and Horizon under LXC containers, and using the following configuration:
 
