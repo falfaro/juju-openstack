@@ -104,9 +104,7 @@ services:
     options:
       source: cloud:xenial-newton
     to:
-    - lxd:2
-    - lxd:3
-    - lxd:4
+    - lxd:ceph-osd
   ceph-osd:
     bindings:
       public: storage-data
@@ -123,9 +121,7 @@ services:
       osd-reformat: 'yes'
       source: cloud:xenial-newton
     to:
-    - '2'
-    - '3'
-    - '4'
+    - nova-compute
   ceph-radosgw:
     bindings:
       public: public-api
