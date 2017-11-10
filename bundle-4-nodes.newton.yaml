@@ -17,6 +17,8 @@ relations:
   - mysql-hacluster:ha
 - - keystone:ha
   - keystone-hacluster:ha
+- - neutron-api:ha
+  - neutron-api-hacluster:ha
     # OpenStack relations
 - - nova-compute:amqp
   - rabbitmq-server:amqp
@@ -229,15 +231,22 @@ services:
       gui-x: '500'
       gui-y: '500'
     charm: cs:xenial/neutron-api
-    num_units: 1
+    num_units: 3
     options:
       dns-domain: felipe-alfaro.com.
       enable-ml2-dns: true
       flat-network-providers: physnet1
       neutron-security-groups: true
       openstack-origin: cloud:xenial-newton
+      vip: '10.50.0.202 10.100.0.202 10.150.0.202'
     to:
-    - lxd:4
+    - lxd:1
+    - lxd:2
+    - lxd:3
+  neutron-api-hacluster:
+    charm: cs:xenial/hacluster
+    options:
+      cluster_count: 3
   neutron-gateway:
     bindings:
       data: compute-data
