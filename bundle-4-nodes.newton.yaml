@@ -19,6 +19,8 @@ relations:
   - keystone-hacluster:ha
 - - neutron-api:ha
   - neutron-api-hacluster:ha
+- - nova-cloud-controller:ha
+  - nova-cloud-controller-hacluster:ha
     # OpenStack relations
 - - nova-compute:amqp
   - rabbitmq-server:amqp
@@ -104,6 +106,7 @@ services:
     charm: cs:xenial/ceph-mon
     num_units: 3
     options:
+      expected-osd-count: 3
       source: cloud:xenial-newton
     to:
     - lxd:ceph-osd
@@ -282,14 +285,21 @@ services:
       gui-x: '0'
       gui-y: '500'
     charm: cs:xenial/nova-cloud-controller
-    num_units: 1
+    num_units: 3
     options:
       console-access-protocol: novnc
       console-proxy-ip: local
       network-manager: Neutron
       openstack-origin: cloud:xenial-newton
+      vip: '10.50.0.203 10.100.0.203 10.150.0.203'
     to:
+    - lxd:1
+    - lxd:2
     - lxd:3
+  nova-cloud-controller-hacluster:
+    charm: cs:xenial/hacluster
+    options:
+      cluster_count: 3
   nova-compute:
     annotations:
       gui-x: '250'
@@ -331,6 +341,10 @@ services:
       gui-x: '500'
       gui-y: '250'
     charm: cs:xenial/rabbitmq-server
-    num_units: 1
+    num_units: 3
+    options:
+      min-cluster-size: 3
     to:
     - lxd:1
+    - lxd:2
+    - lxd:3
