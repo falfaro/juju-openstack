@@ -17,6 +17,8 @@ relations:
   - mysql-hacluster:ha
 - - keystone:ha
   - keystone-hacluster:ha
+- - glance:ha
+  - glance-hacluster:ha
 - - neutron-api:ha
   - neutron-api-hacluster:ha
 - - nova-cloud-controller:ha
@@ -164,6 +166,8 @@ services:
       gui-y: '250'
     charm: cs:xenial/cinder-ceph
     num_units: 0
+  # Glance has to be deployed on baremetal: when running inside an
+  # LXD container Glance cannot reach Ceph monitors.
   glance:
     bindings:
       public: public-api
@@ -174,11 +178,18 @@ services:
       gui-x: '250'
       gui-y: '0'
     charm: cs:xenial/glance
-    num_units: 1
+    num_units: 3
     options:
       openstack-origin: cloud:xenial-newton
+      vip: '10.50.0.204 10.100.0.204 10.150.0.204'
     to:
+    - '1'
+    - '2'
     - '3'
+  glance-hacluster:
+    charm: cs:xenial/hacluster
+    options:
+      cluster_count: 3
   keystone:
     bindings:
       public: public-api
