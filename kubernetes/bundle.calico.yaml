@@ -1,0 +1,118 @@
+series: xenial
+description: A nine-machine Kubernetes cluster, appropriate for production. Includes a three-machine etcd cluster and three Kubernetes worker nodes.
+machines:
+  '1':
+    constraints: arch=amd64 spaces=internal-api
+    series: xenial
+  '2':
+    constraints: arch=amd64 spaces=internal-api
+    series: xenial
+  '3':
+    constraints: arch=amd64 spaces=internal-api
+    series: xenial
+  '4':
+    constraints: arch=amd64 spaces=internal-api
+    series: xenial
+  '5':
+    constraints: arch=amd64 spaces=internal-api
+    series: xenial
+services:
+  ceph-mon:
+    bindings:
+      "": internal-api
+    charm: cs:xenial/ceph-mon
+    num_units: 3
+    to:
+    - lxd:1
+    - lxd:2
+    - lxd:3
+  ceph-osd:
+    bindings:
+      "": internal-api
+    charm: cs:xenial/ceph-osd
+    num_units: 5
+    options:
+      bluestore: true
+      harden: ''
+      osd-devices: /dev/vdb
+      osd-reformat: 'yes'
+    to:
+    - '1'
+    - '2'
+    - '3'
+    - '4'
+    - '5'
+  easyrsa:
+    bindings:
+      "": internal-api
+    charm: cs:~containers/easyrsa
+    num_units: 1
+    to:
+    - '1'
+  etcd:
+    bindings:
+      "": internal-api
+    charm: cs:~containers/etcd
+    num_units: 3
+    to:
+    - '1'
+    - '2'
+    - '3'
+  calico:
+    charm: cs:~containers/calico
+  kubeapi-load-balancer:
+    bindings:
+      "": internal-api
+    charm: cs:~containers/kubeapi-load-balancer
+    expose: true
+    num_units: 1
+    to:
+    - '4'
+  kubernetes-master:
+    bindings:
+      "": internal-api
+    charm: cs:~containers/kubernetes-master
+    num_units: 1
+    options:
+      channel: 1.8/stable
+    to:
+    - '4'
+  kubernetes-worker:
+    bindings:
+      "": internal-api
+    charm: cs:~containers/kubernetes-worker
+    expose: true
+    num_units: 1
+    options:
+      channel: 1.8/stable
+    to:
+    - '5'
+relations:
+- - ceph-osd:mon
+  - ceph-mon:osd
+- - kubernetes-master
+  - ceph-mon
+- - kubernetes-master:kube-api-endpoint
+  - kubeapi-load-balancer:apiserver
+- - kubernetes-master:loadbalancer
+  - kubeapi-load-balancer:loadbalancer
+- - kubernetes-master:kube-control
+  - kubernetes-worker:kube-control
+- - kubernetes-master:certificates
+  - easyrsa:client
+- - etcd:certificates
+  - easyrsa:client
+- - kubernetes-master:etcd
+  - etcd:db
+- - kubernetes-worker:certificates
+  - easyrsa:client
+- - kubernetes-worker:kube-api-endpoint
+  - kubeapi-load-balancer:website
+- - kubeapi-load-balancer:certificates
+  - easyrsa:client
+- - calico:etcd
+  - etcd:db
+- - calico:cni
+  - kubernetes-master:cni
+- - calico:cni
+  - kubernetes-worker:cni
