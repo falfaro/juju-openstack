@@ -13,7 +13,7 @@ After the deployment has finished, some post-installation steps are required in 
 
 ```
 $ juju scp * kubernetes-master/0:
-$ juju ssh kubernetes-master:0
+$ juju ssh kubernetes-master/0
 ubuntu@node-21:~$ ./rbd-storage-class.sh
 ```
 
