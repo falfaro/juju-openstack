@@ -3,8 +3,15 @@ source novarc
 openstack token issue || exit 1
 
 # Glance
-curl http://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img | openstack image create --public --container-format=bare --disk-format=qcow2 xenial
-curl http://download.cirros-cloud.net/0.4.0~pre1/cirros-0.4.0~pre1-x86_64-disk.img | openstack image create --public --container-format=bare --disk-format=qcow2 cirros
+if [ ! -f xenial-server-cloudimg-amd64-disk1.img ]; then
+  wget http://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img
+fi
+openstack image create --public --container-format=bare --disk-format=qcow2 --file xenial-server-cloudimg-amd64-disk1.img xenial
+
+if [ ! -f cirros-0.4.0~pre1-x86_64-disk.img ]; then
+  wget http://download.cirros-cloud.net/0.4.0~pre1/cirros-0.4.0~pre1-x86_64-disk.img
+fi
+openstack image create --public --container-format=bare --disk-format=qcow2 --file cirros-0.4.0~pre1-x86_64-disk.img cirros
 
 # Neutron
 ./neutron-ext-net --network-type flat -g 10.99.0.1 -c 10.99.0.0/20 -f 10.99.0.10:10.99.0.254 ext_net
