@@ -2,19 +2,25 @@ series: xenial
 description: A nine-machine Kubernetes cluster, appropriate for production. Includes a three-machine etcd cluster and three Kubernetes worker nodes.
 machines:
   '1':
-    constraints: arch=amd64 spaces=internal-api
+    constraints: arch=amd64 spaces=internal-api tags=^kubernetes-worker
     series: xenial
   '2':
-    constraints: arch=amd64 spaces=internal-api
+    constraints: arch=amd64 spaces=internal-api tags=^kubernetes-worker
     series: xenial
   '3':
-    constraints: arch=amd64 spaces=internal-api
+    constraints: arch=amd64 spaces=internal-api tags=^kubernetes-worker
     series: xenial
   '4':
-    constraints: arch=amd64 spaces=internal-api
+    constraints: arch=amd64 spaces=internal-api tags=^kubernetes-worker
     series: xenial
   '5':
-    constraints: arch=amd64 spaces=internal-api
+    constraints: arch=amd64 spaces=internal-api tags=kubernetes-worker
+    series: xenial
+  '6':
+    constraints: arch=amd64 spaces=internal-api tags=kubernetes-worker
+    series: xenial
+  '7':
+    constraints: arch=amd64 spaces=internal-api tags=kubernetes-worker
     series: xenial
 services:
   ceph-mon:
@@ -30,7 +36,7 @@ services:
     bindings:
       "": internal-api
     charm: cs:xenial/ceph-osd
-    num_units: 5
+    num_units: 7
     options:
       bluestore: true
       harden: ''
@@ -41,7 +47,7 @@ services:
     - '2'
     - '3'
     - '4'
-    - '5'
+    - kubernetes-worker
   easyrsa:
     bindings:
       "": internal-api
@@ -82,11 +88,13 @@ services:
       "": internal-api
     charm: cs:~containers/kubernetes-worker
     expose: true
-    num_units: 1
+    num_units: 3
     options:
       channel: 1.8/stable
     to:
     - '5'
+    - '6'
+    - '7'
 relations:
 - - ceph-osd:mon
   - ceph-mon:osd
