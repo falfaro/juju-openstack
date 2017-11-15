@@ -1,0 +1,3 @@
+[submodule "kubernetes/kubernetes"]
+	path = kubernetes/kubernetes
+	url = git@github.com:falfaro/kubernetes.git
