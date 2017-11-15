@@ -12,7 +12,7 @@ $JUJU_BIN deploy ./bundle.yaml
 After the deployment has finished, some post-installation steps are required in order to configure Ceph and integrate it with Kubernetes:
 
 ```
-$ juju scp * kubernetes-master/0:
+$ juju scp rbd-storage-class.sh kubernetes-master/0:
 $ juju ssh kubernetes-master/0
 ubuntu@node-21:~$ ./rbd-storage-class.sh
 ```
@@ -20,17 +20,18 @@ ubuntu@node-21:~$ ./rbd-storage-class.sh
 In order to test the integration:
 
 ```
-ubuntu@node-21:~$ kubectl create -f claim1.yaml
-ubuntu@node-21:~$ kubectl get pvc
+$ ./post-deploy.sh
+$ kubectl create -f claim1.yaml
+$ kubectl get pvc
 NAME      STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 claim1    Bound     pvc-1ef00fd9-c95a-11e7-b620-525400a360c5   3Gi        RWO            slow           6m
-ubuntu@node-21:~$ kubectl create -f pod.yaml
+$ kubectl create -f pod.yaml
 ```
 
 After some time, which is required for the Pod and container to be started up:
 
 ```
-ubuntu@node-21:~$ kubectl get pods
+$ kubectl get pods
 NAME                             READY     STATUS    RESTARTS   AGE
 default-http-backend-mzm6n       1/1       Running   0          20m
 nginx-ingress-controller-cfggv   1/1       Running   0          20m
@@ -40,7 +41,7 @@ server-78k7k                     1/1       Running   0          9s
 To see a more detailed description of what has happened behind the scenes:
 
 ```
-ubuntu@node-21:~$ kubectl describe pod server-78k7k
+$ kubectl describe pod server-78k7k
 Name:           server-78k7k
 Namespace:      default
 Node:           node-22/10.14.0.122
