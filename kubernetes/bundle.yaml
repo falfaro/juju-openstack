@@ -11,7 +11,7 @@ machines:
     constraints: arch=amd64 spaces=internal-api tags=^kubernetes-worker
     series: xenial
   '4':
-    constraints: arch=amd64 spaces=internal-api tags=^kubernetes-worker
+    constraints: arch=amd64 spaces=internal-api tags=kubernetes-master
     series: xenial
   '5':
     constraints: arch=amd64 spaces=internal-api tags=kubernetes-worker
@@ -46,7 +46,7 @@ services:
     - '1'
     - '2'
     - '3'
-    - '4'
+    - kubernetes-master
     - kubernetes-worker
   easyrsa:
     bindings:
