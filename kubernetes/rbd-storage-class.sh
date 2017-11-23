@@ -23,4 +23,5 @@ parameters:
     pool: kube
     userId: kube
     userSecretName: ceph-secret-user
+    imageFormat: "1"
 EOF
