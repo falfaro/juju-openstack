@@ -16,7 +16,7 @@ metadata:
    name: slow
 provisioner: kubernetes.io/rbd
 parameters:
-    monitors: '$(cat /etc/ceph/ceph.conf | grep 'mon host = ' | sed 's,mon host = ,,g' | tr ' ' ',')'
+    monitors: '$(cat /etc/ceph/ceph.conf | grep 'mon.host = ' | sed 's,mon.host = ,,g' | tr ' ' ',')'
     adminId: admin
     adminSecretName: ceph-secret-admin
     adminSecretNamespace: kube-system
