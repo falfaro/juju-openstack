@@ -2,13 +2,13 @@ series: xenial
 description: A nine-machine Kubernetes cluster, appropriate for production. Includes a three-machine etcd cluster and three Kubernetes worker nodes.
 machines:
   '1':
-    constraints: arch=amd64 spaces=internal-api tags=^kubernetes-worker
+    constraints: arch=amd64 spaces=internal-api tags=ceph-osd
     series: xenial
   '2':
-    constraints: arch=amd64 spaces=internal-api tags=^kubernetes-worker
+    constraints: arch=amd64 spaces=internal-api tags=ceph-osd
     series: xenial
   '3':
-    constraints: arch=amd64 spaces=internal-api tags=^kubernetes-worker
+    constraints: arch=amd64 spaces=internal-api tags=ceph-osd
     series: xenial
   '4':
     constraints: arch=amd64 spaces=internal-api tags=kubernetes-master
