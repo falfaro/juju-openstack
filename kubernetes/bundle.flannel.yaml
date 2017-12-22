@@ -1,25 +1,22 @@
 series: xenial
 description: A nine-machine Kubernetes cluster, appropriate for production. Includes a three-machine etcd cluster and three Kubernetes worker nodes.
 machines:
-  '1':
+  0:
     constraints: arch=amd64 spaces=internal-api tags=ceph-osd
     series: xenial
-  '2':
+  1:
     constraints: arch=amd64 spaces=internal-api tags=ceph-osd
     series: xenial
-  '3':
-    constraints: arch=amd64 spaces=internal-api tags=ceph-osd
-    series: xenial
-  '4':
+  2:
     constraints: arch=amd64 spaces=internal-api tags=kubernetes-master
     series: xenial
-  '5':
+  3:
     constraints: arch=amd64 spaces=internal-api tags=kubernetes-worker
     series: xenial
-  '6':
+  4:
     constraints: arch=amd64 spaces=internal-api tags=kubernetes-worker
     series: xenial
-  '7':
+  5:
     constraints: arch=amd64 spaces=internal-api tags=kubernetes-worker
     series: xenial
 services:
@@ -27,62 +24,58 @@ services:
     bindings:
       "": internal-api
     charm: cs:xenial/ceph-mon
-    num_units: 3
+    num_units: 1
+    options:
+      monitor-count: 1
     to:
-    - lxd:1
-    - lxd:2
-    - lxd:3
+    - 0
   ceph-osd:
     bindings:
       "": internal-api
     charm: cs:xenial/ceph-osd
-    num_units: 7
+    num_units: 3
     options:
       bluestore: true
       harden: ''
       osd-devices: /dev/vdb
       osd-reformat: 'yes'
     to:
-    - '1'
-    - '2'
-    - '3'
-    - kubernetes-master
-    - kubernetes-worker
+    - 3
+    - 4
+    - 5
   easyrsa:
     bindings:
       "": internal-api
     charm: cs:~containers/easyrsa-27
     num_units: 1
     to:
-    - '1'
+    - 1
   etcd:
     bindings:
       "": internal-api
     charm: cs:~containers/etcd-63
-    num_units: 3
+    num_units: 1
     to:
-    - '1'
-    - '2'
-    - '3'
+    - 1
   flannel:
     charm: cs:~containers/flannel-40
   kubeapi-load-balancer:
     bindings:
       "": internal-api
-    charm: cs:~containers/kubeapi-load-balancer-43
+    charm: cs:~containers/kubeapi-load-balancer-44
     expose: true
     num_units: 1
     to:
-    - '4'
+    - 2
   kubernetes-master:
     bindings:
       "": internal-api
-    charm: cs:~containers/kubernetes-master-77
+    charm: cs:~containers/kubernetes-master-78
     num_units: 1
     options:
       channel: 1.9/stable
     to:
-    - '4'
+    - 2
   kubernetes-worker:
     bindings:
       "": internal-api
@@ -92,9 +85,9 @@ services:
     options:
       channel: 1.9/stable
     to:
-    - '5'
-    - '6'
-    - '7'
+    - 3
+    - 4
+    - 5
 relations:
 - - ceph-osd:mon
   - ceph-mon:osd
