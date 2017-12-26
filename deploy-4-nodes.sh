@@ -5,7 +5,7 @@ set -e
 
 $JUJU_BIN version
 $JUJU_BIN destroy-controller --destroy-all-models openstack-base-hw-x -y && sleep 30s || true
-$JUJU_BIN bootstrap maas-hw openstack-base-hw-x --config=./maas-hw-config.yaml --to node-32
+$JUJU_BIN bootstrap maas-hw openstack-base-hw-x --no-gui --config=./maas-hw-config.yaml --to node-32
 $JUJU_BIN switch openstack-base-hw-x:controller
 
 sleep 15
