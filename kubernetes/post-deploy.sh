@@ -28,5 +28,5 @@ mkdir -p ~/.kube
 
 retry juju scp kubernetes-master/0:config ~/.kube/config
 
-mkdir -p ~/snap/helm/common/kube/config
+mkdir -p ~/snap/helm/common/kube
 cp ~/.kube/config ~/snap/helm/common/kube/config
