@@ -1,0 +1,195 @@
+machines:
+  '1':
+    constraints: arch=amd64 spaces=compute-external,^storage-cluster
+    series: xenial
+  '2':
+    constraints: arch=amd64 spaces=storage-cluster,^compute-external
+    series: xenial
+  '3':
+    constraints: arch=amd64 spaces=storage-cluster,^compute-external
+    series: xenial
+  '4':
+    constraints: arch=amd64 spaces=storage-cluster,^compute-external
+    series: xenial
+relations:
+- - nova-compute:amqp
+  - rabbitmq-server:amqp
+- - neutron-gateway:amqp
+  - rabbitmq-server:amqp
+- - keystone:shared-db
+  - mysql:shared-db
+- - nova-cloud-controller:identity-service
+  - keystone:identity-service
+- - glance:identity-service
+  - keystone:identity-service
+- - neutron-api:identity-service
+  - keystone:identity-service
+- - neutron-openvswitch:neutron-plugin-api
+  - neutron-api:neutron-plugin-api
+- - neutron-api:shared-db
+  - mysql:shared-db
+- - neutron-api:amqp
+  - rabbitmq-server:amqp
+- - neutron-gateway:neutron-plugin-api
+  - neutron-api:neutron-plugin-api
+- - glance:shared-db
+  - mysql:shared-db
+- - glance:amqp
+  - rabbitmq-server:amqp
+- - nova-cloud-controller:image-service
+  - glance:image-service
+- - nova-compute:image-service
+  - glance:image-service
+- - nova-cloud-controller:cloud-compute
+  - nova-compute:cloud-compute
+- - nova-cloud-controller:amqp
+  - rabbitmq-server:amqp
+- - nova-cloud-controller:quantum-network-service
+  - neutron-gateway:quantum-network-service
+- - nova-compute:neutron-plugin
+  - neutron-openvswitch:neutron-plugin
+- - neutron-openvswitch:amqp
+  - rabbitmq-server:amqp
+- - openstack-dashboard:identity-service
+  - keystone:identity-service
+- - nova-cloud-controller:shared-db
+  - mysql:shared-db
+- - nova-cloud-controller:neutron-api
+  - neutron-api:neutron-api
+- - ntp:juju-info
+  - nova-compute:juju-info
+- - ntp:juju-info
+  - neutron-gateway:juju-info
+- - nova-compute:lxd
+  - lxd:lxd
+series: xenial
+services:
+  glance:
+    bindings:
+      public: public-api
+      internal: internal-api
+      admin: admin-api
+      shared-db: internal-api
+    charm: cs:xenial/glance
+    num_units: 1
+    options:
+      openstack-origin: cloud:xenial-pike
+      worker-multiplier: 0.25
+    to:
+    - 'lxd:4'
+  keystone:
+    bindings:
+      public: public-api
+      internal: internal-api
+      admin: admin-api
+      shared-db: internal-api
+    charm: cs:xenial/keystone
+    num_units: 1
+    options:
+      admin-password: openstack
+      openstack-origin: cloud:xenial-pike
+      worker-multiplier: 0.25
+    to:
+    - 'lxd:3'
+  lxd:
+    charm: cs:xenial/lxd
+    num_units: 0
+    options:
+      block-devices: /dev/vdb
+      overwrite: true
+      storage-type: btrfs
+  mysql:
+    bindings:
+      shared-db: internal-api
+    charm: cs:xenial/percona-cluster
+    num_units: 1
+    options:
+      max-connections: 1000
+      innodb-buffer-pool-size: '25%'
+    to:
+    - 'lxd:1'
+  neutron-api:
+    bindings:
+      public: public-api
+      internal: internal-api
+      admin: admin-api
+      shared-db: internal-api
+    charm: cs:xenial/neutron-api
+    num_units: 1
+    options:
+      dns-domain: felipe-alfaro.com.
+      enable-ml2-dns: true
+      flat-network-providers: physnet1
+      neutron-security-groups: true
+      openstack-origin: cloud:xenial-pike
+      worker-multiplier: 0.25
+    to:
+    - 'lxd:2'
+  neutron-gateway:
+    bindings:
+      data: compute-data
+    charm: cs:xenial/neutron-gateway
+    num_units: 1
+    options:
+      bridge-mappings: physnet1:br-ex
+      data-port: br-ex:ens4.99
+      dns-servers: '8.8.8.8,8.8.4.4'
+      openstack-origin: cloud:xenial-pike
+      worker-multiplier: 0.25
+    to:
+    - '1'
+  neutron-openvswitch:
+    bindings:
+      data: compute-data
+    charm: cs:xenial/neutron-openvswitch
+    num_units: 0
+  nova-cloud-controller:
+    bindings:
+      public: public-api
+      internal: internal-api
+      admin: admin-api
+      shared-db: internal-api
+    charm: cs:xenial/nova-cloud-controller
+    num_units: 1
+    options:
+      console-access-protocol: novnc
+      console-proxy-ip: local
+      network-manager: Neutron
+      openstack-origin: cloud:xenial-pike
+      worker-multiplier: 0.25
+    to:
+    - 'lxd:2'
+  nova-compute:
+    charm: cs:xenial/nova-compute
+    num_units: 3
+    options:
+      config-flags: default_ephemeral_format=ext4
+      enable-live-migration: true
+      enable-resize: true
+      migration-auth-type: ssh
+      openstack-origin: cloud:xenial-pike
+      virt-type: lxd
+    to:
+    - '2'
+    - '3'
+    - '4'
+  ntp:
+    charm: cs:xenial/ntp
+    num_units: 0
+  openstack-dashboard:
+    bindings:
+      website: admin-api
+      "": public-api
+    charm: cs:xenial/openstack-dashboard
+    num_units: 1
+    options:
+      openstack-origin: cloud:xenial-pike
+    to:
+    - 'lxd:4'
+  rabbitmq-server:
+    bindings:
+      amqp: internal-api
+    charm: cs:xenial/rabbitmq-server
+    num_units: 1
+    to:
+    - 'lxd:1'
