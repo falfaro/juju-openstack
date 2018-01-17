@@ -28,5 +28,8 @@ mkdir -p ~/.kube
 
 retry juju scp kubernetes-master/0:config ~/.kube/config
 
+# Initialise Helm
 mkdir -p ~/snap/helm/common/kube
 cp ~/.kube/config ~/snap/helm/common/kube/config
+kubectl create -f helm-rbac-config.yaml
+helm init --service-account tiller
