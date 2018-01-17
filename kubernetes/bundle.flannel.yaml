@@ -48,23 +48,23 @@ services:
   easyrsa:
     bindings:
       "": internal-api
-    charm: cs:~containers/easyrsa-28
+    charm: cs:~containers/easyrsa-29
     num_units: 1
     to:
     - 1
   etcd:
     bindings:
       "": internal-api
-    charm: cs:~containers/etcd-64
+    charm: cs:~containers/etcd-67
     num_units: 1
     to:
     - 1
   flannel:
-    charm: cs:~containers/flannel-41
+    charm: cs:~containers/flannel-42
   kubeapi-load-balancer:
     bindings:
       "": internal-api
-    charm: cs:~containers/kubeapi-load-balancer-45
+    charm: cs:~containers/kubeapi-load-balancer-48
     expose: true
     num_units: 1
     to:
@@ -72,7 +72,7 @@ services:
   kubernetes-master:
     bindings:
       "": internal-api
-    charm: cs:~containers/kubernetes-master-79
+    charm: cs:~containers/kubernetes-master-81
     num_units: 1
     options:
       authorization-mode: "RBAC,Node"
@@ -83,7 +83,7 @@ services:
   kubernetes-worker:
     bindings:
       "": internal-api
-    charm: cs:~containers/kubernetes-worker-82
+    charm: cs:~containers/kubernetes-worker-85
     expose: true
     num_units: 3
     options:
