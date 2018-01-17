@@ -25,7 +25,7 @@ function retry {
 
 juju destroy-model -y kubernetes
 juju add-model kubernetes
-juju deploy bundle.flannel.yaml
+juju deploy bundle.calico.yaml
 
 juju wait -w
 
