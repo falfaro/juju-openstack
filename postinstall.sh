@@ -9,7 +9,7 @@ case $VIRT_TYPE in
     ;;
   kvm)
     echo "info: nova-kvm detected"
-    XENIAL_ING=xenial-server-cloudimg-amd64-disk1.img
+    XENIAL_IMG=xenial-server-cloudimg-amd64-disk1.img
     CIRROS_IMG=cirros-0.4.0~pre1-x86_64-disk.img
     ;;
   *)
