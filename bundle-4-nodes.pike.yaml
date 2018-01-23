@@ -11,9 +11,20 @@ machines:
   '4':
     constraints: arch=amd64 spaces=storage-cluster,^compute-external
     series: xenial
+  '5':
+    constraints: arch=amd64 tags=ceph-osd
+    series: xenial
+  '6':
+    constraints: arch=amd64 tags=ceph-osd
+    series: xenial
+  '7':
+    constraints: arch=amd64 tags=ceph-osd
+    series: xenial
 relations:
-- - nova-compute:ceph-access
-  - cinder-ceph:ceph-access
+    # Relations for setting up HA
+- - mysql:ha
+  - mysql-hacluster:ha
+    # OpenStack relations
 - - nova-compute:amqp
   - rabbitmq-server:amqp
 - - neutron-gateway:amqp
@@ -89,33 +100,26 @@ relations:
 series: xenial
 services:
   ceph-mon:
-    bindings:
-      public: storage-data
-      cluster: storage-cluster
     charm: cs:xenial/ceph-mon
     num_units: 3
     options:
       expected-osd-count: 3
       source: cloud:xenial-pike
     to:
-    - 'lxd:2'
-    - 'lxd:3'
-    - 'lxd:4'
+    - lxd:ceph-osd
   ceph-osd:
-    bindings:
-      public: storage-data
-      cluster: storage-cluster
     charm: cs:xenial/ceph-osd
     num_units: 3
     options:
       bluestore: true
+      harden: ''
       osd-devices: /dev/vdb
       osd-reformat: 'yes'
       source: cloud:xenial-pike
     to:
-    - '2'
-    - '3'
-    - '4'
+    - '5'
+    - '6'
+    - '7'
   ceph-radosgw:
     bindings:
       public: public-api
@@ -126,7 +130,7 @@ services:
     options:
       source: cloud:xenial-pike
     to:
-    - 'lxd:1'
+    - lxd:1
   cinder:
     bindings:
       public: public-api
@@ -139,12 +143,13 @@ services:
       block-device: None
       glance-api-version: 2
       openstack-origin: cloud:xenial-pike
-      worker-multiplier: 0.25
     to:
-    - 'lxd:3'
+    - '2'
   cinder-ceph:
     charm: cs:xenial/cinder-ceph
     num_units: 0
+  # Glance has to be deployed on baremetal: when running inside an
+  # LXD container Glance cannot reach Ceph monitors.
   glance:
     bindings:
       public: public-api
@@ -155,9 +160,8 @@ services:
     num_units: 1
     options:
       openstack-origin: cloud:xenial-pike
-      worker-multiplier: 0.25
     to:
-    - 'lxd:4'
+    - '1'
   keystone:
     bindings:
       public: public-api
@@ -169,19 +173,27 @@ services:
     options:
       admin-password: openstack
       openstack-origin: cloud:xenial-pike
-      worker-multiplier: 0.25
     to:
-    - 'lxd:3'
+    - lxd:1
   mysql:
     bindings:
       shared-db: internal-api
+      cluster: internal-api
     charm: cs:xenial/percona-cluster
-    num_units: 1
+    num_units: 3
     options:
-      max-connections: 1000
+      vip: '10.100.0.200'
       innodb-buffer-pool-size: '25%'
+      max-connections: 1000
+      min-cluster-size: 3
     to:
-    - 'lxd:1'
+    - lxd:1
+    - lxd:2
+    - lxd:3
+  mysql-hacluster:
+    charm: cs:xenial/hacluster
+    options:
+      cluster_count: 3
   neutron-api:
     bindings:
       public: public-api
@@ -196,9 +208,8 @@ services:
       flat-network-providers: physnet1
       neutron-security-groups: true
       openstack-origin: cloud:xenial-pike
-      worker-multiplier: 0.25
     to:
-    - 'lxd:2'
+    - lxd:2
   neutron-gateway:
     bindings:
       data: compute-data
@@ -208,8 +219,9 @@ services:
       bridge-mappings: physnet1:br-ex
       data-port: br-ex:ens4.99
       dns-servers: '8.8.8.8,8.8.4.4'
+      ext-port: ens4.99
+      instance-mtu: 1456
       openstack-origin: cloud:xenial-pike
-      worker-multiplier: 0.25
     to:
     - '1'
   neutron-openvswitch:
@@ -230,14 +242,12 @@ services:
       console-proxy-ip: local
       network-manager: Neutron
       openstack-origin: cloud:xenial-pike
-      worker-multiplier: 0.25
     to:
-    - 'lxd:2'
+    - lxd:3
   nova-compute:
     charm: cs:xenial/nova-compute
     num_units: 3
     options:
-      config-flags: default_ephemeral_format=ext4
       enable-live-migration: true
       enable-resize: true
       migration-auth-type: ssh
@@ -258,11 +268,15 @@ services:
     options:
       openstack-origin: cloud:xenial-pike
     to:
-    - 'lxd:4'
+    - lxd:4
   rabbitmq-server:
     bindings:
       amqp: internal-api
     charm: cs:xenial/rabbitmq-server
-    num_units: 1
+    num_units: 3
+    options:
+      min-cluster-size: 3
     to:
-    - 'lxd:1'
+    - lxd:1
+    - lxd:2
+    - lxd:3

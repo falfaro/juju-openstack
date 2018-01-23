@@ -11,18 +11,19 @@ machines:
   '4':
     constraints: arch=amd64 spaces=storage-cluster,^compute-external
     series: xenial
+  '5':
+    constraints: arch=amd64 tags=ceph-osd
+    series: xenial
+  '6':
+    constraints: arch=amd64 tags=ceph-osd
+    series: xenial
+  '7':
+    constraints: arch=amd64 tags=ceph-osd
+    series: xenial
 relations:
     # Relations for setting up HA
 - - mysql:ha
   - mysql-hacluster:ha
-- - keystone:ha
-  - keystone-hacluster:ha
-- - glance:ha
-  - glance-hacluster:ha
-- - neutron-api:ha
-  - neutron-api-hacluster:ha
-- - nova-cloud-controller:ha
-  - nova-cloud-controller-hacluster:ha
     # OpenStack relations
 - - nova-compute:amqp
   - rabbitmq-server:amqp
@@ -99,12 +100,6 @@ relations:
 series: xenial
 services:
   ceph-mon:
-    bindings:
-      public: storage-data
-      cluster: storage-cluster
-    annotations:
-      gui-x: '750'
-      gui-y: '500'
     charm: cs:xenial/ceph-mon
     num_units: 3
     options:
@@ -113,12 +108,6 @@ services:
     to:
     - lxd:ceph-osd
   ceph-osd:
-    bindings:
-      public: storage-data
-      cluster: storage-cluster
-    annotations:
-      gui-x: '1000'
-      gui-y: '500'
     charm: cs:xenial/ceph-osd
     num_units: 3
     options:
@@ -128,15 +117,14 @@ services:
       osd-reformat: 'yes'
       source: cloud:xenial-newton
     to:
-    - nova-compute
+    - '5'
+    - '6'
+    - '7'
   ceph-radosgw:
     bindings:
       public: public-api
       internal: internal-api
       admin: admin-api
-    annotations:
-      gui-x: '1000'
-      gui-y: '250'
     charm: cs:xenial/ceph-radosgw
     num_units: 1
     options:
@@ -149,9 +137,6 @@ services:
       internal: internal-api
       admin: admin-api
       shared-db: internal-api
-    annotations:
-      gui-x: '750'
-      gui-y: '0'
     charm: cs:xenial/cinder
     num_units: 1
     options:
@@ -161,9 +146,6 @@ services:
     to:
     - '2'
   cinder-ceph:
-    annotations:
-      gui-x: '750'
-      gui-y: '250'
     charm: cs:xenial/cinder-ceph
     num_units: 0
   # Glance has to be deployed on baremetal: when running inside an
@@ -174,52 +156,29 @@ services:
       internal: internal-api
       admin: admin-api
       shared-db: internal-api
-    annotations:
-      gui-x: '250'
-      gui-y: '0'
     charm: cs:xenial/glance
-    num_units: 3
+    num_units: 1
     options:
       openstack-origin: cloud:xenial-newton
-      vip: '10.50.0.204 10.100.0.204 10.150.0.204'
     to:
     - '1'
-    - '2'
-    - '3'
-  glance-hacluster:
-    charm: cs:xenial/hacluster
-    options:
-      cluster_count: 3
   keystone:
     bindings:
       public: public-api
       internal: internal-api
       admin: admin-api
       shared-db: internal-api
-    annotations:
-      gui-x: '500'
-      gui-y: '0'
     charm: cs:xenial/keystone
-    num_units: 3
+    num_units: 1
     options:
       admin-password: openstack
       openstack-origin: cloud:xenial-newton
-      vip: '10.50.0.201 10.100.0.201 10.150.0.201'
     to:
     - lxd:1
-    - lxd:2
-    - lxd:3
-  keystone-hacluster:
-    charm: cs:xenial/hacluster
-    options:
-      cluster_count: 3
   mysql:
     bindings:
       shared-db: internal-api
       cluster: internal-api
-    annotations:
-      gui-x: '0'
-      gui-y: '250'
     charm: cs:xenial/percona-cluster
     num_units: 3
     options:
@@ -241,32 +200,19 @@ services:
       internal: internal-api
       admin: admin-api
       shared-db: internal-api
-    annotations:
-      gui-x: '500'
-      gui-y: '500'
     charm: cs:xenial/neutron-api
-    num_units: 3
+    num_units: 1
     options:
       dns-domain: felipe-alfaro.com.
       enable-ml2-dns: true
       flat-network-providers: physnet1
       neutron-security-groups: true
       openstack-origin: cloud:xenial-newton
-      vip: '10.50.0.202 10.100.0.202 10.150.0.202'
     to:
-    - lxd:1
     - lxd:2
-    - lxd:3
-  neutron-api-hacluster:
-    charm: cs:xenial/hacluster
-    options:
-      cluster_count: 3
   neutron-gateway:
     bindings:
       data: compute-data
-    annotations:
-      gui-x: '0'
-      gui-y: '0'
     charm: cs:xenial/neutron-gateway
     num_units: 1
     options:
@@ -281,9 +227,6 @@ services:
   neutron-openvswitch:
     bindings:
       data: compute-data
-    annotations:
-      gui-x: '250'
-      gui-y: '500'
     charm: cs:xenial/neutron-openvswitch
     num_units: 0
   nova-cloud-controller:
@@ -292,29 +235,16 @@ services:
       internal: internal-api
       admin: admin-api
       shared-db: internal-api
-    annotations:
-      gui-x: '0'
-      gui-y: '500'
     charm: cs:xenial/nova-cloud-controller
-    num_units: 3
+    num_units: 1
     options:
       console-access-protocol: novnc
       console-proxy-ip: local
       network-manager: Neutron
       openstack-origin: cloud:xenial-newton
-      vip: '10.50.0.203 10.100.0.203 10.150.0.203'
     to:
-    - lxd:1
-    - lxd:2
     - lxd:3
-  nova-cloud-controller-hacluster:
-    charm: cs:xenial/hacluster
-    options:
-      cluster_count: 3
   nova-compute:
-    annotations:
-      gui-x: '250'
-      gui-y: '250'
     charm: cs:xenial/nova-compute
     num_units: 3
     options:
@@ -327,18 +257,12 @@ services:
     - '3'
     - '4'
   ntp:
-    annotations:
-      gui-x: '1000'
-      gui-y: '0'
     charm: cs:xenial/ntp
     num_units: 0
   openstack-dashboard:
     bindings:
       website: admin-api
       "": public-api
-    annotations:
-      gui-x: '500'
-      gui-y: '-250'
     charm: cs:xenial/openstack-dashboard
     num_units: 1
     options:
@@ -348,9 +272,6 @@ services:
   rabbitmq-server:
     bindings:
       amqp: internal-api
-    annotations:
-      gui-x: '500'
-      gui-y: '250'
     charm: cs:xenial/rabbitmq-server
     num_units: 3
     options:
