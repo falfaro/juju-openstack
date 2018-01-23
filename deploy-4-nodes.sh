@@ -9,6 +9,7 @@ $JUJU_BIN bootstrap maas-hw openstack-base-hw-x --no-gui --config=./maas-hw-conf
 $JUJU_BIN destroy-model openstack || :
 $JUJU_BIN add-model openstack
 $JUJU_BIN deploy bundle-4-nodes.pike.yaml
-watch -c "$JUJU_BIN status --color"
+$JUJU_BIN wait -w
+$JUJU_BIN status --color
 #git clone https://github.com/wwwtyro/juju-status.git || true
 #watch -c ./juju-status/juju-status unit.workload unit.juju unit.message
