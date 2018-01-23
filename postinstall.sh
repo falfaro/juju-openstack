@@ -69,4 +69,4 @@ nova boot --image xenial --flavor m1.small --key-name mykey --nic net-name=inter
 set_floatingip "xenial-test"
 echo info: creating CirrOS instance...
 nova boot --image cirros --flavor m1.small --key-name mykey --nic net-name=internal cirros-test
-set_floatingip "xenial-test"
+set_floatingip "cirros-test"
