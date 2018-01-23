@@ -4,8 +4,7 @@ function set_floatingip()
 {
 	local instance=$1
 	local port_id=$(openstack port list --server "$instance" -c ID -f json | jq -r '.[0].ID')
-	local floatingip_id=$(openstack floating ip create ext_net -f json | jq -r ".id")
-	openstack floating ip set --port $port_id $floatingip_id
+	openstack floating ip create --port $port_id ext_net
 }
 
 VIRT_TYPE=$(juju config nova-compute virt-type)
@@ -26,6 +25,8 @@ case $VIRT_TYPE in
 esac
 
 source novarc
+source virtualenvwrapper.sh
+workon openstack
 openstack token issue || exit 1
 
 # Glance
