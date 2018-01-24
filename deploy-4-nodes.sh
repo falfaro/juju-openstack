@@ -1,12 +1,12 @@
 #!/bin/bash
 
 set -e
-: ${JUJU_BIN:=/snap/bin/juju}
+JUJU_BIN=/snap/bin/juju
 
 $JUJU_BIN version
 #$JUJU_BIN destroy-controller --destroy-all-models openstack-base-hw-x -y && sleep 30s || true
-$JUJU_BIN bootstrap maas-hw openstack-base-hw-x --no-gui --config=./maas-hw-config.yaml --to node-32
-$JUJU_BIN destroy-model openstack || :
+$JUJU_BIN bootstrap maas-hw openstack-base-hw-x --no-gui --config=./maas-hw-config.yaml --to node-32 || :
+$JUJU_BIN destroy-model -y openstack || :
 $JUJU_BIN add-model openstack
 $JUJU_BIN deploy bundle-4-nodes.pike.yaml
 $JUJU_BIN wait -w
