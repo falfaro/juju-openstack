@@ -2,12 +2,11 @@
 #  While this works with python3, other requirements in the
 #  venv aren't quite py3-ready.
 
-try:
-    from quantumclient.v2_0 import client
-except ImportError:
-    from neutronclient.v2_0 import client
+from keystoneauth1.identity import v2
+from keystoneauth1 import session
+from keystoneclient.v2_0 import client as keystone_client
+from neutronclient.v2_0 import client as neutron_client
 
-from keystoneclient.v2_0 import client as ks_client
 import optparse
 import os
 import sys
@@ -63,16 +62,17 @@ if __name__ == '__main__':
     subnet_name = "{}_subnet".format(net_name)
     cidr = args[1]
 
-    keystone = ks_client.Client(username=os.environ['OS_USERNAME'],
-                                password=os.environ['OS_PASSWORD'],
-                                tenant_name=os.environ['OS_TENANT_NAME'],
-                                auth_url=os.environ['OS_AUTH_URL'],
-                                region_name=os.environ['OS_REGION_NAME'])
-    quantum = client.Client(username=os.environ['OS_USERNAME'],
-                            password=os.environ['OS_PASSWORD'],
-                            tenant_name=os.environ['OS_TENANT_NAME'],
-                            auth_url=os.environ['OS_AUTH_URL'],
-                            region_name=os.environ['OS_REGION_NAME'])
+    auth = v2.Password(auth_url=os.environ['OS_AUTH_URL'],
+                       username=os.environ['OS_USERNAME'],
+                       password=os.environ['OS_PASSWORD'],
+                       tenant_name=os.environ['OS_TENANT_NAME'])
+    sess = session.Session(auth=auth)
+    keystone = keystone_client.Client(session=sess)
+    quantum = neutron_client.Client(username=os.environ['OS_USERNAME'],
+                                    password=os.environ['OS_PASSWORD'],
+                                    tenant_name=os.environ['OS_TENANT_NAME'],
+                                    auth_url=os.environ['OS_AUTH_URL'],
+                                    region_name=os.environ['OS_REGION_NAME'])
 
     # Resolve tenant id
     tenant_id = None
