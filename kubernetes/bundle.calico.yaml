@@ -2,95 +2,76 @@ series: xenial
 description: A nine-machine Kubernetes cluster, appropriate for production. Includes a three-machine etcd cluster and three Kubernetes worker nodes.
 machines:
   0:
-    constraints: arch=amd64 spaces=internal-api tags=ceph-osd
-    series: xenial
+    constraints: arch=amd64 tags=ceph-osd
   1:
-    constraints: arch=amd64 spaces=internal-api tags=ceph-osd
-    series: xenial
+    constraints: arch=amd64 tags=ceph-osd
   2:
-    constraints: arch=amd64 spaces=internal-api tags=kubernetes-master
-    series: xenial
+    constraints: arch=amd64 tags=ceph-osd
   3:
-    constraints: arch=amd64 spaces=internal-api tags=kubernetes-worker
-    series: xenial
+    constraints: arch=amd64 tags=kubernetes-master
   4:
-    constraints: arch=amd64 spaces=internal-api tags=kubernetes-worker
-    series: xenial
+    constraints: arch=amd64 tags=kubernetes-worker
   5:
-    constraints: arch=amd64 spaces=internal-api tags=kubernetes-worker
-    series: xenial
+    constraints: arch=amd64 tags=kubernetes-worker
 services:
   ceph-mon:
-    bindings:
-      "": internal-api
     charm: cs:xenial/ceph-mon
-    num_units: 1
+    num_units: 3
     options:
-      monitor-count: 1
+      monitor-count: 3
     to:
-    - 0
+    - 'lxd:0'
+    - 'lxd:1'
+    - 'lxd:2'
   ceph-osd:
-    bindings:
-      "": internal-api
     charm: cs:xenial/ceph-osd
     num_units: 3
     options:
-      bluestore: true
-      harden: ''
+      #bluestore: true
+      #harden: ''
       osd-devices: /dev/vdb
       osd-reformat: 'yes'
     to:
-    - 3
-    - 4
-    - 5
+    - '0'
+    - '1'
+    - '2'
   easyrsa:
-    bindings:
-      "": internal-api
     charm: cs:~containers/easyrsa-29
     num_units: 1
     to:
-    - 1
+    - '3'
   etcd:
-    bindings:
-      "": internal-api
     charm: cs:~containers/etcd-67
     num_units: 1
     to:
-    - 1
+    - '3'
   calico:
     charm: cs:~containers/calico-22
     options:
       calico-node-image: quay.io/calico/node:v2.6.5
   kubeapi-load-balancer:
-    bindings:
-      "": internal-api
     charm: cs:~containers/kubeapi-load-balancer-48
     expose: true
     num_units: 1
     to:
-    - 2
+    - '3'
   kubernetes-master:
-    bindings:
-      "": internal-api
     charm: cs:~containers/kubernetes-master-81
     num_units: 1
     options:
       authorization-mode: "RBAC,Node"
       channel: 1.9/stable
     to:
-    - 2
+    - '3'
   kubernetes-worker:
-    bindings:
-      "": internal-api
     charm: cs:~containers/kubernetes-worker-85
     expose: true
-    num_units: 3
+    num_units: 2
     options:
       channel: 1.9/stable
     to:
-    - 3
-    - 4
-    - 5
+    - '4'
+    - '5'
 relations:
 - - ceph-osd:mon
   - ceph-mon:osd
