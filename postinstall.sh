@@ -25,7 +25,7 @@ case $VIRT_TYPE in
 esac
 
 source novarc
-source virtualenvwrapper.sh
+source /usr/share/virtualenvwrapper/virtualenvwrapper.sh 
 workon openstack
 openstack token issue || exit 1
 
@@ -50,7 +50,7 @@ glance image-create --name="cirros" --visibility public --progress \
 
 # Neutron
 echo info: creating neutron external network...
-./neutron-ext-net --network-type flat -g 10.99.0.1 -c 10.99.0.0/20 -f 10.99.0.10:10.99.0.254 ext_net
+./neutron-ext-net --network-type flat -g 192.168.100.1 -c 192.168.100.0/24 -f 192.168.100.100:192.168.100.254 ext_net
 neutron subnet-update --dns-nameserver 8.8.8.8 --dns-nameserver 8.8.4.4 ext_net_subnet
 echo info: creating neutron virtual network...
 ./neutron-tenant-net -t admin -r provider-router internal 10.5.5.0/24
@@ -62,8 +62,12 @@ openstack security group rule create --ingress --ethertype IPv4 --dst-port 22 --
 openstack security group rule create --ingress --ethertype IPv4 --protocol icmp $SECURITY_GROUP_ID
 
 # Nova
-echo info: creating nova m1.small flavor...
+if [ ! -f $HOME/.ssh/id_rsa ]; then
+  ssh-keygen -N "" -f $HOME/.ssh/id_rsa
+fi
+echo info: creating nova keypair from $HOME/.ssh/id_rsa.pub...
 nova keypair-add --pub-key ~/.ssh/id_rsa.pub mykey
+echo info: creating nova m1.small flavor...
 nova flavor-create m1.small auto 1024 4 1
 echo info: creating Xenial instance...
 nova boot --image xenial --flavor m1.small --key-name mykey --nic net-name=internal --user-data=xenial-cloud-init.cfg xenial-test
