@@ -3,7 +3,6 @@ kind: PersistentVolumeClaim
 spec:
   accessModes:
   - ReadWriteOnce
-  storageClassName: slow
   resources:
     requests:
       storage: 3Gi

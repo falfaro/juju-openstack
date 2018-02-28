@@ -7,13 +7,15 @@ fi
 kubectl delete secret ceph-secret-admin --namespace=kube-system
 kubectl create secret generic ceph-secret-admin --from-literal=key="$(ceph auth get-key client.admin)" --namespace=kube-system --type=kubernetes.io/rbd
 kubectl delete secret ceph-secret-user
-kubectl create secret generic ceph-secret-user --from-literal=key="$(ceph auth get-key client.kube)" --type=kubernetes.io/rbd
+kubectl create secret generic ceph-secret-user --from-literal=key="$(ceph auth get-key client.kube)" --namespace=kube-system --type=kubernetes.io/rbd
 kubectl delete storageclass slow
 cat << EOF | kubectl create -f -
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
    name: slow
+   annotations:
+     storageclass.kubernetes.io/is-default-class: "true"
 provisioner: kubernetes.io/rbd
 parameters:
     monitors: '$(cat /etc/ceph/ceph.conf | grep 'mon.host = ' | sed 's,mon.host = ,,g' | tr ' ' ',')'
@@ -23,5 +25,6 @@ parameters:
     pool: kube
     userId: kube
     userSecretName: ceph-secret-user
+    userSecretNamespace: kube-system
     imageFormat: "1"
 EOF
