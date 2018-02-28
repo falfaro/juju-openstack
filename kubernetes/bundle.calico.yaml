@@ -36,35 +36,36 @@ services:
     - '1'
     - '2'
   easyrsa:
-    charm: cs:~containers/easyrsa-29
+    charm: cs:~containers/easyrsa-33
     num_units: 1
     to:
     - '3'
   etcd:
-    charm: cs:~containers/etcd-67
+    charm: cs:~containers/etcd-74
     num_units: 1
     to:
     - '3'
   calico:
-    charm: cs:~containers/calico-22
+    charm: cs:~containers/calico-29
     options:
       calico-node-image: quay.io/calico/node:v2.6.5
   kubeapi-load-balancer:
-    charm: cs:~containers/kubeapi-load-balancer-48
+    charm: cs:~containers/kubeapi-load-balancer-55
     expose: true
     num_units: 1
     to:
     - '3'
   kubernetes-master:
-    charm: cs:~containers/kubernetes-master-81
+    charm: cs:~containers/kubernetes-master-97
     num_units: 1
     options:
+      api-extra-args: admission-control=Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota,DefaultTolerationSeconds,NodeRestriction,DefaultStorageClass
       authorization-mode: "RBAC,Node"
       channel: 1.9/stable
     to:
     - '3'
   kubernetes-worker:
-    charm: cs:~containers/kubernetes-worker-85
+    charm: cs:~containers/kubernetes-worker-106
     expose: true
     num_units: 2
     options:
