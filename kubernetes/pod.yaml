@@ -21,3 +21,14 @@ spec:
         - name: mypvc
           persistentVolumeClaim:
             claimName: claim1
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+metadata:
+  name: claim1
